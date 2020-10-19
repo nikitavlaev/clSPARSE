@@ -30,11 +30,13 @@
 
 typedef enum _platform {
     AMD = 0,
-    NVIDIA
+    NVIDIA = 1,
+    INTEL = 2,
 } cl_platform_type;
 
 const static std::string amd_platform_str = "AMD";
 const static std::string nvidia_platform_str = "NVIDIA";
+const static std::string intel_platform_str = "Intel(R)";
 
 cl_int getPlatforms( cl_platform_id **platforms, cl_uint* num_platforms );
 

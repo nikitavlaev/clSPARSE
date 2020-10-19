@@ -623,7 +623,7 @@ int main (int argc, char* argv[])
     desc.add_options()
             ("help,h", "Produce this message.")
             ("platform,l", po::value(&platform)->default_value("AMD"),
-             "OpenCL platform: AMD or NVIDIA.")
+             "OpenCL platform: AMD, NVIDIA or INTEL.")
             ("device,d", po::value(&dID)->default_value(0),
              "Device id within platform.")
             ("size,s",po::value(&size)->default_value(1024),
@@ -668,6 +668,10 @@ int main (int argc, char* argv[])
         else if ("NVIDIA" == platform)
         {
             pID = NVIDIA;
+        }
+        else if ("INTEL" == platform)
+        {
+            pID = INTEL;
         }
         else
         {

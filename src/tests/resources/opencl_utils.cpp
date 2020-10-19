@@ -82,7 +82,7 @@ cl::Device getDevice( cl_platform_type pID, cl_uint dID )
 
     std::map<std::string, int> pNames;
 
-    //search for AMD or NVIDIA
+    //search for AMD, NVIDIA or INTEL
     cl_int pIndex = -1;
     for( const auto& p : platforms )
     {
@@ -96,13 +96,21 @@ cl::Device getDevice( cl_platform_type pID, cl_uint dID )
 
     //get index of desired platform;
     std::string desired_platform_name;
+    int device_type;
     if( pID == AMD )
     {
         desired_platform_name = amd_platform_str;
+        device_type = CL_DEVICE_TYPE_GPU;
     }
     else if( pID == NVIDIA )
     {
         desired_platform_name = nvidia_platform_str;
+        device_type = CL_DEVICE_TYPE_GPU;
+    }
+    else if( pID == INTEL )
+    {
+        desired_platform_name = intel_platform_str;
+        device_type = CL_DEVICE_TYPE_CPU;
     }
     else
     {
@@ -122,7 +130,7 @@ cl::Device getDevice( cl_platform_type pID, cl_uint dID )
     }
 
     std::vector<cl::Device> devices;
-    platforms[ pIndex ].getDevices( CL_DEVICE_TYPE_GPU, &devices );
+    platforms[ pIndex ].getDevices( device_type, &devices );
 
     assert( dID < devices.size( ) );
 

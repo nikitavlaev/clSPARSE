@@ -392,7 +392,7 @@ int main (int argc, char* argv[])
             ("help,h", "Produce this message.")
             ("path,p", po::value(&path)->required(), "Path to matrix in mtx format.")
             ("platform,l", po::value(&platform)->default_value("AMD"),
-             "OpenCL platform: AMD or NVIDIA.")
+             "OpenCL platform: AMD, NVIDIA or INTEL.")
             ("device,d", po::value(&dID)->default_value(0),
              "Device id within platform.")
             ("alpha,a", po::value(&alpha)->default_value(1.0),
@@ -438,6 +438,10 @@ int main (int argc, char* argv[])
         else if ("NVIDIA" == platform)
         {
             pID = NVIDIA;
+        }
+        else if ("INTEL" == platform)
+        {
+            pID = INTEL;
         }
         else
         {
