@@ -17,7 +17,7 @@
 message( STATUS "Configuring gMock SuperBuild..." )
 include( ExternalProject )
 
-set( ext.gMock_Version "1.7.0" CACHE STRING "gMock version to download/use" )
+set( ext.gMock_Version "1.10.0" CACHE STRING "gMock version to download/use" )
 mark_as_advanced( ext.gMock_Version )
 
 message( STATUS "ext.gMock_Version: " ${ext.gMock_Version} )
@@ -33,7 +33,7 @@ mark_as_advanced( ext.gMock_URL )
 set_directory_properties( PROPERTIES EP_PREFIX ${CMAKE_BINARY_DIR}/Externals/gMock )
 
 if( BUILD64 )
-  set( LIB_DIR lib64 )
+  set( LIB_DIR lib )
 else( )
   set( LIB_DIR lib )
 endif( )
@@ -91,7 +91,7 @@ endif( )
 ExternalProject_Add(
   gMock
   URL ${ext.gMock_URL}
-  URL_MD5 ef5e700c8a0f3ee123e2e0209b8b4961
+  URL_MD5 82358affdd7ab94854c8ee73a180fc53
   CMAKE_ARGS ${ext.gMock.cmake_args} -DCMAKE_DEBUG_POSTFIX=d
   BUILD_COMMAND ${ext.gMock.Make}
   INSTALL_COMMAND ""
@@ -104,7 +104,7 @@ ExternalProject_Get_Property( gMock source_dir )
 set( packageDir "<INSTALL_DIR>/package" )
 
 set( gMockLibDir "<BINARY_DIR>/${LIB_DIR}" )
-set( gTestLibDir "<BINARY_DIR>/gtest/${LIB_DIR}" )
+set( gTestLibDir "<BINARY_DIR>/${LIB_DIR}" )
 if( MSVC_IDE OR XCODE_VERSION )
     # Create a package by bundling libraries and header files
     ExternalProject_Add_Step( gMock createPackage
@@ -121,8 +121,8 @@ else( )
     ExternalProject_Add_Step( gMock createPackage
       COMMAND ${CMAKE_COMMAND} -E copy_directory ${gMockLibDir} ${packageDir}/${LIB_DIR}
       COMMAND ${CMAKE_COMMAND} -E copy_directory ${gTestLibDir} ${packageDir}/${LIB_DIR}
-      COMMAND ${CMAKE_COMMAND} -E copy_directory <SOURCE_DIR>/include ${packageDir}/include
-      COMMAND ${CMAKE_COMMAND} -E copy_directory <SOURCE_DIR>/gtest/include/gtest ${packageDir}/include/gtest
+      COMMAND ${CMAKE_COMMAND} -E copy_directory <SOURCE_DIR>/googlemock/include ${packageDir}/include
+      COMMAND ${CMAKE_COMMAND} -E copy_directory <SOURCE_DIR>/googletest/include/gtest ${packageDir}/include/gtest
       DEPENDEES install
     )
 endif( )
