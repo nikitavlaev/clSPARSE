@@ -65,11 +65,13 @@ sample-initialization
 sample-axpy
 sample-spmv
 sample-cg
+my-sample
 )
 
 set (SAMPLES_C
 sample-initialization-c
 sample-norm1-c
+my-sample-c
 )
 
 set(EXAMPLE_TARGETS)
