@@ -80,6 +80,13 @@ set( clSPARSE.source.cl
   kernels/SpGEMM_ESC_bitonic_kernels.cl
   kernels/SpGEMM_EM_kernels.cl
   kernels/SpGEMM_copyCt2C_kernels.cl
+  kernels/bool_EM_kernels.cl
+  kernels/bool_csradd_merge.cl
+  kernels/bool_csradd_scan.cl
+  kernels/bool_copyCt2C_kernels.cl
+  kernels/bool_ESC_0_1_kernels.cl
+  kernels/bool_ESC_2heap_kernels.cl
+  kernels/bool_ESC_bitonic_kernels.cl
 )
 
 set( clSPARSE.source.cpp
@@ -94,6 +101,7 @@ set( clSPARSE.source.internal
   internal/ocl-type-traits.cpp
   internal/kernel-wrap.cpp
   internal/data-types/csr-meta.cpp
+  internal/data-types/csr-bool-meta.cpp
 )
 
 set( clSPARSE.source.transform
@@ -124,6 +132,8 @@ set( clSPARSE.source.blas2
 set( clSPARSE.source.blas3
   blas3/clsparse-csrmm.cpp
   blas3/clsparse-spm-spm.cpp
+  blas3/clsparse-bool-spm-spm.cpp
+  blas3/clsparse-bool-elem-add.cpp
 )
 
 set( clSPARSE.source.solvers
