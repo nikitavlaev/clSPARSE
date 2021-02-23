@@ -68,6 +68,30 @@ typedef struct clsparseCsrMatrix_
     void* meta;
 } clsparseCsrMatrix;
 
+/*! \brief Structure to encapsulate sparse bool matrix data encoded in CSR
+* form to clSPARSE API
+*/
+typedef struct clsparseBoolCsrMatrix_
+{
+    /** @name CSR matrix data */
+    /**@{*/
+    clsparseIdx_t num_rows;  /*!< Number of rows this matrix has if viewed as dense */
+    clsparseIdx_t num_cols;  /*!< Number of columns this matrix has if viewed as dense */
+    clsparseIdx_t num_nonzeros;  /*!< Number of values in matrix that are non-zero */
+    /**@}*/
+
+    /** @name OpenCL state */
+    /**@{*/
+    void* col_indices;  /*!< column index for corresponding value of size num_nonzeros */
+    void* row_pointer;  /*!< Invariant: row_pointer[i+1]-row_pointer[i] = number of values in row i */
+    /**@}*/
+
+    /*! Pointer to a private structure that contains meta-information the library keeps on a
+    csr-encoded sparse matrix
+    */
+    void* meta;
+} clsparseBoolCsrMatrix;
+
 /*! \brief Structure to encapsulate sparse matrix data encoded in COO
 * form to clSPARSE API
 * \note The indices stored are 0-based

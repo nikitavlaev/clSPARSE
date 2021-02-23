@@ -208,6 +208,37 @@ public:
     }
 };
 
+class clsparseBoolCsrMatrixPrivate: public clsparseBoolCsrMatrix
+{
+public:
+    void clear( )
+    {
+        num_rows = num_cols = num_nonzeros = 0;
+        col_indices = row_pointer = rowBlocks = nullptr;
+        rowBlockSize = 0;
+    }
+
+    clsparseIdx_t nnz_per_row() const
+    {
+        return num_nonzeros / num_rows;
+    }
+
+    cl_ulong colIndOffset () const
+    {
+        return 0;
+    }
+
+    cl_ulong rowOffOffset () const
+    {
+        return 0;
+    }
+
+    cl_ulong rowBlocksOffset( ) const
+    {
+        return 0;
+    }
+};
+
 class clsparseCooMatrixPrivate: public clsparseCooMatrix
 {
 public:
@@ -253,6 +284,7 @@ public:
 static_assert( std::is_standard_layout< clsparseScalarPrivate >::value, "The C++ wrapper classes have to have same memory layout as the C class they inherit from" );
 static_assert( std::is_standard_layout< cldenseVectorPrivate >::value, "The C++ wrapper classes have to have same memory layout as the C class they inherit from" );
 static_assert( std::is_standard_layout< clsparseCsrMatrixPrivate >::value, "The C++ wrapper classes have to have same memory layout as the C class they inherit from" );
+static_assert( std::is_standard_layout< clsparseBoolCsrMatrixPrivate >::value, "The C++ wrapper classes have to have same memory layout as the C class they inherit from" );
 static_assert( std::is_standard_layout< clsparseCooMatrixPrivate >::value, "The C++ wrapper classes have to have same memory layout as the C class they inherit from" );
 static_assert( std::is_standard_layout< cldenseMatrixPrivate >::value, "The C++ wrapper classes have to have same memory layout as the C class they inherit from" );
 

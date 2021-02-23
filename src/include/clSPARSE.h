@@ -201,6 +201,19 @@ extern "C" {
         clsparseInitCsrMatrix( clsparseCsrMatrix* csrMatx );
 
     /*!
+    * \brief Initialize a BOOL sparse matrix CSR structure to be used in the clsparse library
+    * \note It is users responsibility to allocate OpenCL device memory
+    *
+    * \param[out] csrMatx  Sparse BOOL CSR matrix structure to be initialized
+    *
+    * \returns \b clsparseSuccess
+    *
+    * \ingroup INIT
+    */
+    CLSPARSE_EXPORT clsparseStatus
+        clsparseInitBoolCsrMatrix( clsparseBoolCsrMatrix* csrMatx );
+
+    /*!
     * \brief Initialize a dense matrix structure to be used in the clsparse library
     * \note It is users responsibility to allocate OpenCL device memory
     *
@@ -591,6 +604,31 @@ extern "C" {
         clsparseSCsrMatrixfromFile( clsparseCsrMatrix* csrMatx, const char* filePath, clsparseControl control, cl_bool read_explicit_zeroes );
 
     /*!
+     * \brief Read BOOL sparse matrix data from file in CSR format
+     * \details This function reads the contents of the sparse matrix file into clsparseBoolCsrMatrix data structure.
+     * The data structure represents the contents of the sparse matrix data in OpenCL device memory.
+     * This function sorts the values read (on host) by row, then column before copying them into
+     * device memory
+     * \param[out] csrMatx  The BOOL CSR sparse structure that represents the matrix in device memory
+     * \param[in] filePath  A path in the file-system to the sparse matrix file
+     * \param[in] control A valid clsparseControl created with clsparseCreateControl
+     * \param[in] read_explicit_zeroes If the file contains values explicitly declared zero, this controls
+     * whether they are stored in the CSR
+     *
+     * \note The number of non-zeroes actually read from the file may be less than the number of
+     * non-zeroes reported from the file header. Symmetrix matrices may store up to twice as many non-zero
+     * values compared to the number of values in the file. Explicitly declared zeroes may be stored
+     * or not depending on the input \p read_explicit_zeroes.
+     * \note The OpenCL device memory must be allocated before the call to this function.
+     * \post The sparse data is sorted first by row, then by column.
+     * \returns \b clsparseSuccess
+     *
+     * \ingroup FILE
+     */
+    CLSPARSE_EXPORT clsparseStatus
+        clsparseSBoolCsrMatrixfromFile( clsparseBoolCsrMatrix* csrMatx, const char* filePath, clsparseControl control, cl_bool read_explicit_zeroes );
+
+    /*!
      * \brief Read sparse matrix data from file in double precision CSR format
      * \details This function reads the contents of the sparse matrix file into clsparseCsrMatrix data structure.
      * The data structure represents the contents of the sparse matrix data in OpenCL device memory.
@@ -663,6 +701,44 @@ extern "C" {
     */
     CLSPARSE_EXPORT clsparseStatus
         clsparseCsrMetaDelete( clsparseCsrMatrix* csrMatx );
+
+    /*!
+     * \brief Calculate the amount of device memory required to hold meta-data for csr-adaptive SpM-dV algorithm
+     * \details CSR-adaptive is a high performance sparse matrix times dense vector algorithm.  It requires a pre-processing
+     * step to calculate meta-data on the sparse matrix.  This meta-data is stored alongside and carried along
+     * with the other matrix data.
+     * \param[in,out] csrMatx  The BOOL CSR sparse structure that represents the matrix in device memory
+     * \param[in] control A valid clsparseControl created with clsparseCreateControl
+     *
+     * \ingroup FILE
+    */
+    CLSPARSE_EXPORT clsparseMetaSizeResult
+        clsparseBoolCsrMetaSize( clsparseBoolCsrMatrix* csrMatx, clsparseControl control );
+
+    /*!
+     * \brief Allocate memory and calculate the meta-data for csr-adaptive SpM-dV algorithm
+     * \details CSR-adaptive is a high performance sparse matrix times dense vector algorithm.  It requires a pre-processing
+     * step to calculate meta-data on the sparse matrix.  This meta-data is stored alongside and carried along
+     * with the other matrix data.  This function allocates memory for the meta-data and initializes it with proper values.
+     * It is important to remember to deallocate the meta memory with clsparseCsrMetaDelete
+     * \param[in,out] csrMatx  The BOOL CSR sparse structure that represents the matrix in device memory
+     * \param[in] control  A valid clsparseControl created with clsparseCreateControl
+     * \note This function assumes that the memory for rowBlocks has already been allocated by client program
+     *
+     * \ingroup FILE
+     */
+    CLSPARSE_EXPORT clsparseStatus
+        clsparseBoolCsrMetaCreate( clsparseBoolCsrMatrix* csrMatx, clsparseControl control );
+
+    /*!
+    * \brief Delete meta data associated with a CSR encoded matrix
+    * \details Meta data for a sparse matrix may occupy device memory, and this informs the library to release it
+    * \param[in,out] csrMatx  The BOOL CSR sparse structure that represents the matrix in device memory
+    *
+    * \ingroup FILE
+    */
+    CLSPARSE_EXPORT clsparseStatus
+        clsparseBoolCsrMetaDelete( clsparseBoolCsrMatrix* csrMatx );
 
     /**@}*/
 
@@ -1208,6 +1284,41 @@ extern "C" {
                                 clsparseCsrMatrix* sparseMatC,
                           const clsparseControl control );
     /**@}*/
+
+    /*!
+     * \brief BOOL Single Precision CSR Sparse Matrix times Sparse Matrix
+     * \details \f$ C \leftarrow A \ast B \f$
+     * \param[in] sparseMatA Input CSR sparse matrix
+     * \param[in] sparseMatB Input CSR sparse matrix
+     * \param[out] sparseMatC Output CSR sparse matrix
+     * \param[in] control A valid clsparseControl created with clsparseCreateControl
+     * \pre The input sparse matrices data must first be sorted by rows, then by columns
+     * \ingroup BLAS-3
+     */
+   CLSPARSE_EXPORT clsparseStatus
+      clsparseBoolScsrSpGemm( const clsparseBoolCsrMatrix* sparseMatA,
+                              const clsparseBoolCsrMatrix* sparseMatB,
+                                    clsparseBoolCsrMatrix* sparseMatC,
+                              const clsparseControl control );
+    /**@}*/
+
+    /*!
+     * \brief BOOL Single Precision CSR Sparse Matrix PLUS Sparse Matrix
+     * \details \f$ C \leftarrow A \plus B \f$
+     * \param[in] sparseMatA Input CSR sparse matrix
+     * \param[in] sparseMatB Input CSR sparse matrix
+     * \param[out] sparseMatC Output CSR sparse matrix
+     * \param[in] control A valid clsparseControl created with clsparseCreateControl
+     * \pre The input sparse matrices data must first be sorted by rows, then by columns
+     * \ingroup BLAS-3
+     */
+   CLSPARSE_EXPORT clsparseStatus
+      clsparseBoolScsrElemAdd( const clsparseBoolCsrMatrix* sparseMatA,
+                               const clsparseBoolCsrMatrix* sparseMatB,
+                                     clsparseBoolCsrMatrix* sparseMatC,
+                               const clsparseControl control );
+    /**@}*/
+
 
     /*!
      * \defgroup CONVERT Matrix conversion routines
