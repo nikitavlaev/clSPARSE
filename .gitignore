@@ -29,3 +29,8 @@
 
 # CMake
 *.txt.user
+CMakeCache.txt
+CMakeFiles
+.vscode
+
+bin
