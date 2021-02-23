@@ -133,6 +133,7 @@ set( clSPARSE.source.blas3
   blas3/clsparse-csrmm.cpp
   blas3/clsparse-spm-spm.cpp
   blas3/clsparse-bool-spm-spm.cpp
+  blas3/clsparse-bool-elem-add.cpp
 )
 
 set( clSPARSE.source.solvers
