@@ -2,6 +2,7 @@ R"(
 #define WG_SIZE 64
 #define warp_size 64
 #define blocksize WG_SIZE
+#define uint unsigned int
 // #include "assert.cl"  // include assert* macros
 
 __kernel
@@ -161,7 +162,8 @@ void merge_fill(
     __global const int *rpt_b,
     __global const int *col_b,
     __global const int *rpt_c,
-    __global int *col_c)
+    __global int *col_c, 
+    unsigned int n)
 {
     const int row = get_group_id(0);
 
@@ -284,12 +286,60 @@ void merge_fill(
 
         // TODO: optimize prefix sum
         // however it is only WG_SIZE elems...
-        if (j == 0) {
-            for (int i = 1; i < WG_SIZE; i++) {
-                int accum = res[i-1];
-                res[i] += accum;
+        // if (j == 0) {
+        //     for (int i = 1; i < WG_SIZE; i++) {
+        //         int accum = res[i-1];
+        //         res[i] += accum;
+        //     }
+        // }
+
+        // EXACT COPY OF SCAN_BELLOCH
+        // TODO: move scan_belloch to reuse here
+
+        uint local_id = get_local_id(0);
+        uint block_size = get_local_size(0);
+        uint dp = 1;
+
+        for(uint s = block_size>>1; s > 0; s >>= 1)
+        {
+            barrier(CLK_LOCAL_MEM_FENCE);
+            if(local_id < s)
+            {
+                uint i = dp*(2 * local_id + 1) - 1;
+                uint j = dp*(2 * local_id + 2) - 1;
+                res[j] += res[i];
+            }
+ 
+            dp <<= 1;
+        }
+
+        barrier(CLK_LOCAL_MEM_FENCE);
+
+        if(local_id == block_size - 1) {
+            res[local_id] = 0;
+        }
+
+        barrier(CLK_GLOBAL_MEM_FENCE);
+
+        for(uint s = 1; s < block_size; s <<= 1)
+        {
+            dp >>= 1;
+            barrier(CLK_LOCAL_MEM_FENCE);
+
+            if(local_id < s)
+            {
+                uint i = dp*(2 * local_id + 1) - 1;
+                uint j = dp*(2 * local_id + 2) - 1;
+
+                unsigned int t = res[j];
+                res[j] += res[i];
+                res[i] = t;
             }
         }
+
+        barrier(CLK_LOCAL_MEM_FENCE);
+        
+        //END OF EXACT COPY
 
         barrier(CLK_LOCAL_MEM_FENCE);
 

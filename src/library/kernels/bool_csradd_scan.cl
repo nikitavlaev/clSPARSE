@@ -36,9 +36,7 @@ __kernel void scan_blelloch(
 
     if(local_id == block_size - 1) {
         vertices[group_id] = tmp[local_id];
-        printf("kernel: pre total sum\n");
         if (get_local_size(0) == get_global_size(0)) {
-            printf("kernel: total sum %d\n", total_sum);
             *total_sum = tmp[local_id];
         }
         tmp[local_id] = 0;
