@@ -21,6 +21,7 @@
 
 #include <iostream>
 #include <vector>
+#include <assert.h>
 
 #define CL_HPP_ENABLE_EXCEPTIONS
 #define CL_HPP_MINIMUM_OPENCL_VERSION BUILD_CLVERSION
@@ -224,8 +225,24 @@ int main (int argc, char* argv[])
     // status = clsparseBoolScsrSpGemm(&A, &B, &C, createResult.control );
     status = clsparseBoolScsrElemAdd(&A, &B, &C, createResult.control );
 
-    std::vector<int> csrColIndC_h(C.num_nonzeros, 0);
+    std::vector<int> csrRowPtrC_h((C.num_rows + 1), 0);
     int run_status = clEnqueueReadBuffer(queue(),
+                                     C.row_pointer,
+                                     1,
+                                     0,
+                                     (C.num_rows + 1)*sizeof(cl_int),
+                                     csrRowPtrC_h.data(),
+                                     0,
+                                     0,
+                                     0);
+    for (auto i = csrRowPtrC_h.begin(); i != csrRowPtrC_h.end(); ++i)
+    {
+        std::cout << *i << ' '; 
+    }
+    std::cout << std::endl;
+
+    std::vector<int> csrColIndC_h(C.num_nonzeros, 0);
+    run_status = clEnqueueReadBuffer(queue(),
                                      C.col_indices,
                                      1,
                                      0,
@@ -241,10 +258,61 @@ int main (int argc, char* argv[])
     std::cout << std::endl;
 
 
+    // CPU ADDITION
 
+    assert(A.num_rows == B.num_rows);
 
+    clsparseIdx_t* row_ptr_A = (clsparseIdx_t*)malloc((A.num_rows + 1) * sizeof(clsparseIdx_t));
+    clsparseIdx_t* cols_A = (clsparseIdx_t*)malloc(A.num_nonzeros * sizeof(clsparseIdx_t));
+    clsparseIdx_t* row_ptr_B = (clsparseIdx_t*)malloc((B.num_rows + 1) * sizeof(clsparseIdx_t));
+    clsparseIdx_t* cols_B = (clsparseIdx_t*)malloc(B.num_nonzeros * sizeof(clsparseIdx_t));
 
+    clEnqueueReadBuffer(queue(), A.row_pointer, CL_TRUE, 0, (A.num_rows + 1) * sizeof(clsparseIdx_t),
+                        row_ptr_A, 0, NULL, NULL);
+    clEnqueueReadBuffer(queue(), A.col_indices, CL_TRUE, 0, A.num_nonzeros * sizeof(clsparseIdx_t),
+                        cols_A, 0, NULL, NULL);
 
+    clEnqueueReadBuffer(queue(), B.row_pointer, CL_TRUE, 0, (B.num_rows + 1) * sizeof(clsparseIdx_t),
+                        row_ptr_B, 0, NULL, NULL);
+    clEnqueueReadBuffer(queue(), B.col_indices, CL_TRUE, 0, B.num_nonzeros * sizeof(clsparseIdx_t),
+                        cols_B, 0, NULL, NULL);
+
+    std::vector<int> row_ptr_C;
+    std::vector<int> cols_C;
+
+    row_ptr_C.push_back(0);
+    for (int i = 1; i <= A.num_rows; i++)
+    {
+        int start_A = row_ptr_A[i - 1];
+        int end_A = row_ptr_A[i];
+        int start_B = row_ptr_B[i - 1];
+        int end_B = row_ptr_B[i];
+
+        std::vector<int> dst;
+        std::merge(cols_A + start_A, cols_A + end_A, cols_B + start_B, cols_B + end_B, std::back_inserter(dst));
+        dst.erase(std::unique(dst.begin(), dst.end()), dst.end());
+
+        row_ptr_C.push_back(row_ptr_C[i - 1] + dst.size());
+        cols_C.insert(cols_C.end(), dst.begin(), dst.end());
+        dst.clear();
+    }
+
+    for (auto i = row_ptr_C.begin(); i != row_ptr_C.end(); ++i)
+    {
+        std::cout << *i << ' '; 
+    }
+    std::cout << std::endl;
+
+    for (auto i = cols_C.begin(); i != cols_C.end(); ++i)
+    {
+        std::cout << *i << ' '; 
+    }
+    std::cout << std::endl;
+
+    // VERIFY RESULTS
+
+    assert(csrRowPtrC_h == row_ptr_C);
+    assert(csrColIndC_h == cols_C);
 
 
     if (status != clsparseSuccess)
