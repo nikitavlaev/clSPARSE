@@ -47,20 +47,16 @@ int run_bool_scan(
     uint block_size = work_group_size;
     uint32_t a_size = (array_size + block_size - 1) / block_size; // max to save first roots
     uint32_t b_size = (a_size + block_size - 1) / block_size; // max to save second roots
-    std::cout << "sizes " << array_size << ' ' << a_size << ' ' << b_size << std::endl;
+    // std::cout << "sizes " << array_size << ' ' << a_size << ' ' << b_size << std::endl;
 
     cl_mem a_gpu = ::clCreateBuffer(context(), CL_MEM_READ_WRITE, sizeof(uint32_t) * a_size, NULL, &cl_status);
     cl_mem b_gpu = ::clCreateBuffer(context(), CL_MEM_READ_WRITE, sizeof(uint32_t) * b_size, NULL, &cl_status);
     cl_mem total_sum_gpu = ::clCreateBuffer(context(), CL_MEM_READ_WRITE, sizeof(uint32_t), NULL, &cl_status);
 
     cl::LocalSpaceArg local_array = cl::Local(sizeof(uint32_t) * block_size);
-
-    const std::string params = std::string() +
-               "-DINDEX_TYPE=" + OclTypeTraits<cl_int>::type
-            + " -DVALUE_TYPE=" + OclTypeTraits<cl_int>::type;
     
-    cl::Kernel kernel_scan = KernelCache::get(control->queue, "bool_csradd_scan", "scan_blelloch", params);
-    cl::Kernel kernel_update = KernelCache::get(control->queue, "bool_csradd_scan", "update_pref_sum", params);
+    cl::Kernel kernel_scan = KernelCache::get(control->queue, "bool_csradd_scan", "scan_blelloch");
+    cl::Kernel kernel_update = KernelCache::get(control->queue, "bool_csradd_scan", "update_pref_sum");
 
     size_t szLocalWorkSize[1];
     size_t szGlobalWorkSize[1];
@@ -96,12 +92,12 @@ int run_bool_scan(
 
     clEnqueueReadBuffer(control->queue(), total_sum_gpu, CL_TRUE, 0, sizeof(uint32_t), &total_sum, 0, NULL, NULL);
 
-    std::cout << "INNER TOTAL SUM: " << total_sum << std::endl;
+    // std::cout << "INNER TOTAL SUM: " << total_sum << " OUTER: " << outer << std::endl;
 
     while (outer > 1) {
         leaf_size *= block_size;
 
-        std::cout << "META: " << (outer + work_group_size - 1) / work_group_size * work_group_size << std::endl;
+        // std::cout << "META: " << (outer + work_group_size - 1) / work_group_size * work_group_size << std::endl;
         size_t rec_szLocalWorkSize[1];
         size_t rec_szGlobalWorkSize[1];
 
@@ -139,8 +135,9 @@ int run_bool_scan(
         std::swap(a_gpu_ptr, b_gpu_ptr);
         std::swap(a_size_ptr, b_size_ptr);
     }
-    
     clEnqueueReadBuffer(control->queue(), total_sum_gpu, CL_TRUE, 0, sizeof(uint32_t), &total_sum, 0, NULL, NULL);
+
+    return clsparseSuccess;
 }
 
 int run_bool_merge_count(
@@ -153,11 +150,7 @@ int run_bool_merge_count(
     const clsparseControl control
 )
 {
-    const std::string params = std::string() +
-               "-DINDEX_TYPE=" + OclTypeTraits<cl_int>::type
-            + " -DVALUE_TYPE=" + OclTypeTraits<cl_int>::type;
-
-    cl::Kernel kernel = KernelCache::get(control->queue, "bool_csradd_merge", "merge_count", params);
+    cl::Kernel kernel = KernelCache::get(control->queue, "bool_csradd_merge", "merge_count");
 
     size_t szLocalWorkSize[1];
     size_t szGlobalWorkSize[1];
@@ -181,6 +174,8 @@ int run_bool_merge_count(
     {
         return clsparseInvalidKernelExecution;
     }
+
+    return clsparseSuccess;
 }
 
 int run_bool_merge_fill(
@@ -222,6 +217,8 @@ int run_bool_merge_fill(
     {
         return clsparseInvalidKernelExecution;
     }
+
+    return clsparseSuccess;
 }
 
  CLSPARSE_EXPORT clsparseStatus
@@ -279,6 +276,7 @@ int run_bool_merge_fill(
 
     std::cout << "mergecount " << std::endl;
     run_bool_merge_count(csrRowPtrA, csrColIndA, csrRowPtrB, csrColIndB, csrRowPtrCt_d, m, control);
+    std::cout << "after mergecount " << std::endl;
 
     int run_status = clEnqueueReadBuffer(control->queue(),
                                      csrRowPtrCt_d,
@@ -289,6 +287,8 @@ int run_bool_merge_fill(
                                      0,
                                      0,
                                      0);
+
+    std::cout << "read buffer " << std::endl;
     // for (auto i = csrRowPtrCt_h.begin(); i != csrRowPtrCt_h.end(); ++i)
     // {
     //     std::cout << *i << ' '; 
@@ -340,4 +340,6 @@ int run_bool_merge_fill(
     //     std::cout << *i << ' '; 
     // }
     // std::cout << std::endl;
+
+    return clsparseSuccess;
 }
