@@ -195,11 +195,7 @@ int run_bool_merge_fill(
     const clsparseControl control
 )
 {
-    const std::string params = std::string() +
-               "-DINDEX_TYPE=" + OclTypeTraits<cl_int>::type
-            + " -DVALUE_TYPE=" + OclTypeTraits<cl_int>::type;
-
-    cl::Kernel kernel = KernelCache::get(control->queue, "bool_csradd_merge", "merge_fill", params);
+    cl::Kernel kernel = KernelCache::get(control->queue, "bool_csradd_merge", "merge_fill");
 
     size_t szLocalWorkSize[1];
     size_t szGlobalWorkSize[1];
