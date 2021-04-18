@@ -17,7 +17,7 @@ void merge_count(
 
     // const int blocksize = WG_SIZE;
 
-    //workgroup for rowclEnqueueFillBuffer(queue(), csrRowPtrCt_d, &pattern, sizeof(cl_int), 0, (m + 1)*sizeof(cl_int), 0, NULL, NULL);
+    //workgroup for row
     const int row = get_group_id(0);
 
     const int max_val = INT_MAX;

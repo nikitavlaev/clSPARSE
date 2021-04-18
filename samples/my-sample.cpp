@@ -235,11 +235,11 @@ int main (int argc, char* argv[])
                                      0,
                                      0,
                                      0);
-    for (auto i = csrRowPtrC_h.begin(); i != csrRowPtrC_h.end(); ++i)
-    {
-        std::cout << *i << ' '; 
-    }
-    std::cout << std::endl;
+    // for (auto i = csrRowPtrC_h.begin(); i != csrRowPtrC_h.end(); ++i)
+    // {
+    //     std::cout << *i << ' '; 
+    // }
+    // std::cout << std::endl;
 
     std::vector<int> csrColIndC_h(C.num_nonzeros, 0);
     run_status = clEnqueueReadBuffer(queue(),
@@ -251,11 +251,11 @@ int main (int argc, char* argv[])
                                      0,
                                      0,
                                      0);
-    for (auto i = csrColIndC_h.begin(); i != csrColIndC_h.end(); ++i)
-    {
-        std::cout << *i << ' '; 
-    }
-    std::cout << std::endl;
+    // for (auto i = csrColIndC_h.begin(); i != csrColIndC_h.end(); ++i)
+    // {
+    //     std::cout << *i << ' '; 
+    // }
+    // std::cout << std::endl;
 
 
     // CPU ADDITION
@@ -297,17 +297,17 @@ int main (int argc, char* argv[])
         dst.clear();
     }
 
-    for (auto i = row_ptr_C.begin(); i != row_ptr_C.end(); ++i)
-    {
-        std::cout << *i << ' '; 
-    }
-    std::cout << std::endl;
+    // for (auto i = row_ptr_C.begin(); i != row_ptr_C.end(); ++i)
+    // {
+    //     std::cout << *i << ' '; 
+    // }
+    // std::cout << std::endl;
 
-    for (auto i = cols_C.begin(); i != cols_C.end(); ++i)
-    {
-        std::cout << *i << ' '; 
-    }
-    std::cout << std::endl;
+    // for (auto i = cols_C.begin(); i != cols_C.end(); ++i)
+    // {
+    //     std::cout << *i << ' '; 
+    // }
+    // std::cout << std::endl;
 
     // VERIFY RESULTS
 
