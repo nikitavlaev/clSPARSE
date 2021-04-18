@@ -205,7 +205,7 @@ int run_bool_merge_fill(
 
     KernelWrap kWrapper(kernel);
 
-    kWrapper << csrRowPtrA << csrColIndA << csrRowPtrB << csrColIndB << csrRowPtrCt_d << csrColIndC << total_sum;
+    kWrapper << csrRowPtrA << csrColIndA << csrRowPtrB << csrColIndB << csrRowPtrCt_d << csrColIndC;
 
     cl_int cl_status_2 = kWrapper.run(control, global, local);
 
