@@ -107,7 +107,7 @@ int run_bool_scan(
         cl::NDRange rec_local(rec_szLocalWorkSize[0]);
         cl::NDRange rec_global(rec_szGlobalWorkSize[0]);
 
-        std::cout << "scan " << std::endl;
+        // std::cout << "scan " << std::endl;
 
         kWrapper_scan.reset();
         kWrapper_scan << *b_gpu_ptr << *a_gpu_ptr << local_array << total_sum_gpu << outer;
@@ -119,7 +119,7 @@ int run_bool_scan(
             return clsparseInvalidKernelExecution;
         }
 
-        std::cout << "update " << std::endl;
+        // std::cout << "update " << std::endl;
 
         kWrapper_update.reset();
         kWrapper_update << csrRowPtrCt_d << *a_gpu_ptr << array_size << leaf_size;
@@ -190,11 +190,7 @@ int run_bool_merge_fill(
     const clsparseControl control
 )
 {
-    const std::string params = std::string() +
-               "-DINDEX_TYPE=" + OclTypeTraits<cl_int>::type
-            + " -DVALUE_TYPE=" + OclTypeTraits<cl_int>::type;
-
-    cl::Kernel kernel = KernelCache::get(control->queue, "bool_csradd_merge", "merge_fill", params);
+    cl::Kernel kernel = KernelCache::get(control->queue, "bool_csradd_merge", "merge_fill");
 
     size_t szLocalWorkSize[1];
     size_t szGlobalWorkSize[1];
@@ -209,7 +205,7 @@ int run_bool_merge_fill(
 
     KernelWrap kWrapper(kernel);
 
-    kWrapper << csrRowPtrA << csrColIndA << csrRowPtrB << csrColIndB << csrRowPtrCt_d << csrColIndC << total_sum;
+    kWrapper << csrRowPtrA << csrColIndA << csrRowPtrB << csrColIndB << csrRowPtrCt_d << csrColIndC;
 
     cl_int cl_status_2 = kWrapper.run(control, global, local);
 
@@ -274,9 +270,8 @@ int run_bool_merge_fill(
 
     clEnqueueFillBuffer(control->queue(), csrRowPtrCt_d, &pattern, sizeof(cl_int), 0, (m + 1)*sizeof(cl_int), 0, NULL, NULL);
 
-    std::cout << "mergecount " << std::endl;
+    //std::cout << "mergecount " << std::endl;
     run_bool_merge_count(csrRowPtrA, csrColIndA, csrRowPtrB, csrColIndB, csrRowPtrCt_d, m, control);
-    std::cout << "after mergecount " << std::endl;
 
     int run_status = clEnqueueReadBuffer(control->queue(),
                                      csrRowPtrCt_d,
@@ -287,8 +282,6 @@ int run_bool_merge_fill(
                                      0,
                                      0,
                                      0);
-
-    std::cout << "read buffer " << std::endl;
     // for (auto i = csrRowPtrCt_h.begin(); i != csrRowPtrCt_h.end(); ++i)
     // {
     //     std::cout << *i << ' '; 
@@ -296,9 +289,9 @@ int run_bool_merge_fill(
     // std::cout << std::endl;
 
     uint32_t total_sum = 0;
-    std::cout << "scan " << std::endl;
+    // std::cout << "scan " << std::endl;
     run_bool_scan(csrRowPtrA, csrColIndA, csrRowPtrB, csrColIndB, csrRowPtrCt_d, total_sum, m, cxt, control);
-    std::cout << "TOTAL " << total_sum << std::endl;
+    // std::cout << "TOTAL " << total_sum << std::endl;
     run_status = clEnqueueReadBuffer(control->queue(),
                                      csrRowPtrCt_d,
                                      1,
@@ -314,7 +307,7 @@ int run_bool_merge_fill(
     // }
     // std::cout << std::endl;
 
-    std::cout << "mergefill " << std::endl;
+    // std::cout << "mergefill " << std::endl;
     std::vector<int> csrColIndC_h(total_sum, 0);
     cl_mem csrColIndC = ::clCreateBuffer( cxt(), CL_MEM_READ_WRITE, total_sum * sizeof( cl_int ), NULL, &cl_status );
 

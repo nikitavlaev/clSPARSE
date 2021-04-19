@@ -72,7 +72,7 @@ clsparseStatus bool_compute_nnzCt(int _m, cl_mem csrRowPtrA, cl_mem csrColIndA, 
 
      const std::string params = std::string() +
                "-DINDEX_TYPE=" + OclTypeTraits<cl_int>::type
-            + " -DVALUE_TYPE=" + OclTypeTraits<cl_float>::type;
+            + " -DVALUE_TYPE=" + OclTypeTraits<cl_int>::type;
 
     cl::Kernel kernel = KernelCache::get(control->queue, computeNnzCt_kernels, "compute_nnzCt_kernel", params);
 
@@ -109,7 +109,7 @@ clsparseStatus bool_compute_nnzC_Ct_0(int num_threads, int num_blocks, int j, in
 {
     const std::string params = std::string() +
                "-DINDEX_TYPE=" + OclTypeTraits<cl_int>::type
-            + " -DVALUE_TYPE=" + OclTypeTraits<cl_float>::type;
+            + " -DVALUE_TYPE=" + OclTypeTraits<cl_int>::type;
 
 
     cl::Kernel kernel = KernelCache::get(control->queue, ESC_0_1_kernels, "ESC_0", params);
@@ -143,7 +143,7 @@ clsparseStatus bool_compute_nnzC_Ct_1(int num_threads, int num_blocks, int j, in
 {
     const std::string params = std::string() +
                "-DINDEX_TYPE=" + OclTypeTraits<cl_int>::type
-            + " -DVALUE_TYPE=" + OclTypeTraits<cl_float>::type;
+            + " -DVALUE_TYPE=" + OclTypeTraits<cl_int>::type;
 
 
     cl::Kernel kernel = KernelCache::get(control->queue, ESC_0_1_kernels, "ESC_1", params);
@@ -179,7 +179,7 @@ clsparseStatus bool_compute_nnzC_Ct_2heap_noncoalesced_local(int num_threads, in
 {
     const std::string params = std::string() +
                "-DINDEX_TYPE=" + OclTypeTraits<cl_int>::type
-            + " -DVALUE_TYPE=" + OclTypeTraits<cl_float>::type;
+            + " -DVALUE_TYPE=" + OclTypeTraits<cl_int>::type;
 
     size_t szLocalWorkSize[1];
     size_t szGlobalWorkSize[1];
@@ -214,7 +214,7 @@ clsparseStatus bool_compute_nnzC_Ct_bitonic_scan(int num_threads, int num_blocks
 
     const std::string params = std::string() +
                "-DINDEX_TYPE=" + OclTypeTraits<cl_int>::type
-            + " -DVALUE_TYPE=" + OclTypeTraits<cl_float>::type;
+            + " -DVALUE_TYPE=" + OclTypeTraits<cl_int>::type;
 
     cl::Kernel kernel = KernelCache::get(control->queue, ESC_bitonic_kernels, "ESC_bitonic_scan", params);
 
@@ -250,7 +250,7 @@ clsparseStatus bool_compute_nnzC_Ct_mergepath(int num_threads, int num_blocks, i
 {
     const std::string params = std::string() +
                "-DINDEX_TYPE=" + OclTypeTraits<cl_int>::type
-            + " -DVALUE_TYPE=" + OclTypeTraits<cl_float>::type;
+            + " -DVALUE_TYPE=" + OclTypeTraits<cl_int>::type;
 
     cl::Kernel kernel1  = KernelCache::get(control->queue, EM_kernels, "EM_mergepath", params);
     cl::Kernel kernel2  = KernelCache::get(control->queue, EM_kernels, "EM_mergepath_global", params);
@@ -561,7 +561,7 @@ clsparseStatus bool_copy_Ct_to_C_Single(int num_threads, int num_blocks, int loc
 
     const std::string params = std::string() +
                "-DINDEX_TYPE=" + OclTypeTraits<cl_int>::type
-            + " -DVALUE_TYPE=" + OclTypeTraits<cl_float>::type;
+            + " -DVALUE_TYPE=" + OclTypeTraits<cl_int>::type;
 
 
     cl::Kernel kernel = KernelCache::get(control->queue, copyCT2C_kernels, "copyCt2C_Single", params);
@@ -593,7 +593,7 @@ clsparseStatus bool_copy_Ct_to_C_Loopless(int num_threads, int num_blocks, int j
 {
     const std::string params = std::string() +
                "-DINDEX_TYPE=" + OclTypeTraits<cl_int>::type
-            + " -DVALUE_TYPE=" + OclTypeTraits<cl_float>::type;
+            + " -DVALUE_TYPE=" + OclTypeTraits<cl_int>::type;
 
 
     cl::Kernel kernel = KernelCache::get(control->queue, copyCT2C_kernels, "copyCt2C_Loopless", params);
@@ -628,7 +628,7 @@ clsparseStatus bool_copy_Ct_to_C_Loop(int num_threads, int num_blocks, int j, in
 
     const std::string params = std::string() +
                "-DINDEX_TYPE=" + OclTypeTraits<cl_int>::type
-            + " -DVALUE_TYPE=" + OclTypeTraits<cl_float>::type;
+            + " -DVALUE_TYPE=" + OclTypeTraits<cl_int>::type;
 
 
     cl::Kernel kernel = KernelCache::get(control->queue, copyCT2C_kernels, "copyCt2C_Loop", params);

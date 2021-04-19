@@ -162,8 +162,7 @@ void merge_fill(
     __global const int *rpt_b,
     __global const int *col_b,
     __global const int *rpt_c,
-    __global int *col_c, 
-    unsigned int n)
+    __global int *col_c)
 {
     const int row = get_group_id(0);
 
