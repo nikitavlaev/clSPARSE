@@ -412,9 +412,8 @@ clsparseStatus bool_compute_nnzC_Ct_mergepath(int num_threads, int num_blocks, i
         nnzCt_new = *_nnzCt + counter * (2 * (mergebuffer_size + 2304));
         //cout << endl << "    ==> nnzCt_new = " << nnzCt_new << endl;
 
-        cl::Context cxt = control->getContext();
 
-    cl_mem  csrColIndCt_new = ::clCreateBuffer( cxt(), CL_MEM_READ_WRITE, nnzCt_new * sizeof( cl_int ), NULL, NULL );
+    cl_mem  csrColIndCt_new = ::clCreateBuffer( control->getContext()(), CL_MEM_READ_WRITE, nnzCt_new * sizeof( cl_int ), NULL, NULL );
 
     clEnqueueCopyBuffer (	control->queue(),
                             *csrColIndCt,
@@ -744,9 +743,7 @@ int bool_copy_Ct_to_C_opencl(int *counter_one, cl_mem csrRowPtrC, cl_mem csrColI
     cl_mem csrColIndB = matB->col_indices;
     // cl_mem csrValB    = matB->values;
 
-    cl::Context cxt = control->getContext();
-
-    matC->row_pointer = ::clCreateBuffer( cxt(), CL_MEM_READ_WRITE, (m + 1) * sizeof( cl_int ), NULL, &run_status );
+    matC->row_pointer = ::clCreateBuffer( control->getContext()(), CL_MEM_READ_WRITE, (m + 1) * sizeof( cl_int ), NULL, &run_status );
 
     int pattern = 0;
     clEnqueueFillBuffer(control->queue(), matC->row_pointer, &pattern, sizeof(cl_int), 0, (m + 1)*sizeof(cl_int), 0, NULL, NULL);
@@ -755,7 +752,7 @@ int bool_copy_Ct_to_C_opencl(int *counter_one, cl_mem csrRowPtrC, cl_mem csrColI
 
     std::vector<int> csrRowPtrC_h(m + 1, 0);
 
-    cl_mem csrRowPtrCt_d = ::clCreateBuffer( cxt(), CL_MEM_READ_WRITE, (m + 1) * sizeof( cl_int ), NULL, &run_status );
+    cl_mem csrRowPtrCt_d = ::clCreateBuffer( control->getContext()(), CL_MEM_READ_WRITE, (m + 1) * sizeof( cl_int ), NULL, &run_status );
     clEnqueueFillBuffer(control->queue(), csrRowPtrCt_d, &pattern, sizeof(cl_int), 0, (m + 1)*sizeof(cl_int), 0, NULL, NULL);
 
     std::vector<int> csrRowPtrCt_h(m + 1, 0);
@@ -772,7 +769,7 @@ int bool_copy_Ct_to_C_opencl(int *counter_one, cl_mem csrRowPtrC, cl_mem csrColI
 
     std::vector<int> queue_one(m * TUPLE_QUEUE, 0);
 
-    cl_mem queue_one_d = ::clCreateBuffer( cxt(), CL_MEM_READ_WRITE, TUPLE_QUEUE * m * sizeof(int), NULL, &run_status );
+    cl_mem queue_one_d = ::clCreateBuffer( control->getContext()(), CL_MEM_READ_WRITE, TUPLE_QUEUE * m * sizeof(int), NULL, &run_status );
 
     run_status = clEnqueueReadBuffer(control->queue(),
                                      csrRowPtrCt_d,
@@ -789,7 +786,7 @@ int bool_copy_Ct_to_C_opencl(int *counter_one, cl_mem csrRowPtrC, cl_mem csrColI
     // STAGE 2 - STEP 2 : create Ct
     //cout << "nnzCt == " <<  nnzCt << endl;
 
-    cl_mem csrColIndCt = ::clCreateBuffer( cxt(), CL_MEM_READ_WRITE, nnzCt * sizeof( cl_int ), NULL, &run_status );
+    cl_mem csrColIndCt = ::clCreateBuffer( control->getContext()(), CL_MEM_READ_WRITE, nnzCt * sizeof( cl_int ), NULL, &run_status );
 
     //copy queue_one
     run_status = clEnqueueWriteBuffer(control->queue(),
@@ -830,7 +827,7 @@ int bool_copy_Ct_to_C_opencl(int *counter_one, cl_mem csrRowPtrC, cl_mem csrColI
     int nnzC = csrRowPtrC_h[m];
     //std::cout << "nnzC = " << nnzC << std::endl;
 
-    matC->col_indices = ::clCreateBuffer( cxt(), CL_MEM_READ_WRITE, nnzC * sizeof( cl_int ), NULL, &run_status );
+    matC->col_indices = ::clCreateBuffer( control->getContext()(), CL_MEM_READ_WRITE, nnzC * sizeof( cl_int ), NULL, &run_status );
 
     cl_mem csrColIndC = matC->col_indices;
 
