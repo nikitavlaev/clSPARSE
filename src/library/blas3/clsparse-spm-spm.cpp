@@ -862,6 +862,7 @@ int copy_Ct_to_C_opencl(int *counter_one, cl_mem csrValC, cl_mem csrRowPtrC, cl_
     ::clReleaseMemObject(queue_one_d);
     ::clReleaseMemObject(csrColIndCt);
     ::clReleaseMemObject(csrValCt);
+    return clsparseSuccess;
 }
 
 int statistics(int *_h_csrRowPtrCt, int *_h_counter, int *_h_counter_one, int *_h_counter_sum, int *_h_queue_one, int _m)

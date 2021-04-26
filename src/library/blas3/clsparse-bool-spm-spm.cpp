@@ -851,4 +851,5 @@ int bool_copy_Ct_to_C_opencl(int *counter_one, cl_mem csrRowPtrC, cl_mem csrColI
     ::clReleaseMemObject(csrRowPtrCt_d);
     ::clReleaseMemObject(queue_one_d);
     ::clReleaseMemObject(csrColIndCt);
+    return clsparseSuccess;
 }
