@@ -66,6 +66,7 @@ sample-axpy
 sample-spmv
 sample-cg
 my-sample
+spgemm-sample
 )
 
 set (SAMPLES_C

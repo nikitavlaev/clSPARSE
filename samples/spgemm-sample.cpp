@@ -21,7 +21,6 @@
 
 #include <iostream>
 #include <vector>
-#include <assert.h>
 
 #define CL_HPP_ENABLE_EXCEPTIONS
 #define CL_HPP_MINIMUM_OPENCL_VERSION BUILD_CLVERSION
@@ -72,10 +71,10 @@
  *
  */
 
-int readAndCreateBoolCsrMatrix(clsparseBoolCsrMatrix* A, std::string matrix_path, clsparseCreateResult createResult, cl::Context context)
+int readAndCreateCsrMatrix(clsparseCsrMatrix* A, std::string matrix_path, clsparseCreateResult createResult, cl::Context context)
 {
     cl_int cl_status;
-    clsparseInitBoolCsrMatrix(A);
+    clsparseInitCsrMatrix(A);
     // Read matrix from file. Calculates the rowBlocks structures as well.
     clsparseIdx_t nnz, row, col;
     // read MM header to get the size of the matrix;
@@ -93,6 +92,8 @@ int readAndCreateBoolCsrMatrix(clsparseBoolCsrMatrix* A, std::string matrix_path
     A->num_cols = col;
 
     // Allocate memory for CSR matrix
+    A->values = ::clCreateBuffer( context(), CL_MEM_READ_ONLY,
+                                 A->num_nonzeros * sizeof( float ), NULL, &cl_status );
 
     A->col_indices = ::clCreateBuffer( context(), CL_MEM_READ_ONLY,
                                      A->num_nonzeros * sizeof( clsparseIdx_t ), NULL, &cl_status );
@@ -102,12 +103,12 @@ int readAndCreateBoolCsrMatrix(clsparseBoolCsrMatrix* A, std::string matrix_path
 
 
     // Read matrix market file with explicit zero values included.
-    fileError = clsparseSBoolCsrMatrixfromFile( A, matrix_path.c_str( ), createResult.control, true );
+    fileError = clsparseSCsrMatrixfromFile( A, matrix_path.c_str( ), createResult.control, true );
 
     // This function allocates memory for rowBlocks structure. If not called
     // the structure will not be calculated and clSPARSE will run the vectorized
     // version of SpMV instead of adaptive;
-    clsparseBoolCsrMetaCreate( A, createResult.control );
+    clsparseCsrMetaCreate( A, createResult.control );
 
     if (fileError != clsparseSuccess)
     {
@@ -214,107 +215,16 @@ int main (int argc, char* argv[])
     clsparseCreateResult createResult = clsparseCreateControl( queue( ) );
     CLSPARSE_V( createResult.status, "Failed to create clsparse control" );
 
-    clsparseBoolCsrMatrix A;
-    int error = readAndCreateBoolCsrMatrix(&A, matrix_path, createResult, context);
-    clsparseBoolCsrMatrix B;
-    int error1 = readAndCreateBoolCsrMatrix(&B, matrix_path, createResult, context);
+    clsparseCsrMatrix A;
+    int error = readAndCreateCsrMatrix(&A, matrix_path, createResult, context);
+    clsparseCsrMatrix B;
+    int error1 = readAndCreateCsrMatrix(&B, matrix_path, createResult, context);
 
-
-    clsparseBoolCsrMatrix C;
-    /**Step 4. Call the add algorithm */
-    // status = clsparseBoolScsrSpGemm(&A, &B, &C, createResult.control );
-    status = clsparseBoolScsrElemAdd(&A, &B, &C, createResult.control );
-
-    std::vector<int> csrRowPtrC_h((C.num_rows + 1), 0);
-    int run_status = clEnqueueReadBuffer(queue(),
-                                     C.row_pointer,
-                                     1,
-                                     0,
-                                     (C.num_rows + 1)*sizeof(cl_int),
-                                     csrRowPtrC_h.data(),
-                                     0,
-                                     0,
-                                     0);
-    // for (auto i = csrRowPtrC_h.begin(); i != csrRowPtrC_h.end(); ++i)
-    // {
-    //     std::cout << *i << ' '; 
-    // }
-    // std::cout << std::endl;
-
-    std::vector<int> csrColIndC_h(C.num_nonzeros, 0);
-    run_status = clEnqueueReadBuffer(queue(),
-                                     C.col_indices,
-                                     1,
-                                     0,
-                                     C.num_nonzeros*sizeof(cl_int),
-                                     csrColIndC_h.data(),
-                                     0,
-                                     0,
-                                     0);
-    // for (auto i = csrColIndC_h.begin(); i != csrColIndC_h.end(); ++i)
-    // {
-    //     std::cout << *i << ' '; 
-    // }
-    // std::cout << std::endl;
-
-
-    // CPU ADDITION
-
-    assert(A.num_rows == B.num_rows);
-
-    clsparseIdx_t* row_ptr_A = (clsparseIdx_t*)malloc((A.num_rows + 1) * sizeof(clsparseIdx_t));
-    clsparseIdx_t* cols_A = (clsparseIdx_t*)malloc(A.num_nonzeros * sizeof(clsparseIdx_t));
-    clsparseIdx_t* row_ptr_B = (clsparseIdx_t*)malloc((B.num_rows + 1) * sizeof(clsparseIdx_t));
-    clsparseIdx_t* cols_B = (clsparseIdx_t*)malloc(B.num_nonzeros * sizeof(clsparseIdx_t));
-
-    clEnqueueReadBuffer(queue(), A.row_pointer, CL_TRUE, 0, (A.num_rows + 1) * sizeof(clsparseIdx_t),
-                        row_ptr_A, 0, NULL, NULL);
-    clEnqueueReadBuffer(queue(), A.col_indices, CL_TRUE, 0, A.num_nonzeros * sizeof(clsparseIdx_t),
-                        cols_A, 0, NULL, NULL);
-
-    clEnqueueReadBuffer(queue(), B.row_pointer, CL_TRUE, 0, (B.num_rows + 1) * sizeof(clsparseIdx_t),
-                        row_ptr_B, 0, NULL, NULL);
-    clEnqueueReadBuffer(queue(), B.col_indices, CL_TRUE, 0, B.num_nonzeros * sizeof(clsparseIdx_t),
-                        cols_B, 0, NULL, NULL);
-
-    std::vector<int> row_ptr_C;
-    std::vector<int> cols_C;
-
-    row_ptr_C.push_back(0);
-    for (int i = 1; i <= A.num_rows; i++)
-    {
-        int start_A = row_ptr_A[i - 1];
-        int end_A = row_ptr_A[i];
-        int start_B = row_ptr_B[i - 1];
-        int end_B = row_ptr_B[i];
-
-        std::vector<int> dst;
-        std::merge(cols_A + start_A, cols_A + end_A, cols_B + start_B, cols_B + end_B, std::back_inserter(dst));
-        dst.erase(std::unique(dst.begin(), dst.end()), dst.end());
-
-        row_ptr_C.push_back(row_ptr_C[i - 1] + dst.size());
-        cols_C.insert(cols_C.end(), dst.begin(), dst.end());
-        dst.clear();
-    }
-
-    // for (auto i = row_ptr_C.begin(); i != row_ptr_C.end(); ++i)
-    // {
-    //     std::cout << *i << ' '; 
-    // }
-    // std::cout << std::endl;
-
-    // for (auto i = cols_C.begin(); i != cols_C.end(); ++i)
-    // {
-    //     std::cout << *i << ' '; 
-    // }
-    // std::cout << std::endl;
-
-    // VERIFY RESULTS
-
-    assert(csrRowPtrC_h == row_ptr_C);
-    assert(csrColIndC_h == cols_C);
-
-
+    clsparseCsrMatrix C;
+    /**Step 4. Call the spmv algorithm */
+    std::cout << "Step 4" << std::endl;
+    status = clsparseScsrSpGemm(&A, &B, &C, createResult.control);
+    std::cout << "Step 4: end" << std::endl;
     if (status != clsparseSuccess)
     {
         std::cout << "Problem with execution SpMV algorithm."
@@ -340,15 +250,18 @@ int main (int argc, char* argv[])
 
 
     //release mem;
-    clsparseBoolCsrMetaDelete( &A );
+    clsparseCsrMetaDelete( &A );
+    clReleaseMemObject ( A.values );
     clReleaseMemObject ( A.col_indices );
     clReleaseMemObject ( A.row_pointer );
 
-    clsparseBoolCsrMetaDelete( &B );
+    clsparseCsrMetaDelete( &B );
+    clReleaseMemObject ( B.values );
     clReleaseMemObject ( B.col_indices );
     clReleaseMemObject ( B.row_pointer );
 
-    std::cout << C.num_nonzeros << std::endl;
+    std::cout << C.num_rows << C.num_cols << C.num_nonzeros << std::endl;
+    clReleaseMemObject ( C.values );
     clReleaseMemObject ( C.col_indices );
     clReleaseMemObject ( C.row_pointer );
     std::cout << "Program completed successfully." << std::endl;
