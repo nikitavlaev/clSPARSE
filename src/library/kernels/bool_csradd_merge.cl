@@ -152,9 +152,6 @@ void merge_count(
     // printf("Hello %d %d\n", group_id, global_id);
 }
 
-
-
-
 __kernel
 void merge_fill(
     __global const int *rpt_a,
