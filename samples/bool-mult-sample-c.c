@@ -15,8 +15,7 @@
  * ************************************************************************ */
 
  /*! \file
- * \brief Simple demonstration code for how to calculate a SpM-dV (Sparse matrix
- * times dense Vector) multiply
+ * \brief Simple demonstration code for how to calculate a BoolSpMM multiplication
  */
 #include <stdio.h>
 #include <stdlib.h>
@@ -32,43 +31,21 @@
 #include "clSPARSE-error.h"
 
 /**
- * \brief Sample Sparse Matrix dense Vector multiplication (SPMV C++)
- *  \details [y = alpha * A*x + beta * y]
+ * \brief Sample Bool Sparse Matrix Matrix multiplication
+ *  \details [C = A * A]
  *
  * A - [m x n] matrix in CSR format
- * x - dense vector of n elements
- * y - dense vector of m elements
- * alpha, beta - scalars
- *
- *
- * Program presents usage of clSPARSE library in csrmv (y = A*x) operation
- * where A is sparse matrix in CSR format, x, y are dense vectors.
- *
- * clSPARSE offers two spmv algorithms for matrix stored in CSR format.
- * First one is called vector algorithm, the second one is called adaptve.
- * Adaptive version is usually faster but for given matrix additional
- * structure (rowBlocks) needs to be calculated first.
- *
- * To calculate rowBlock structure you have to execute clsparseCsrMetaSize
- * for given matrix stored in CSR format. It is enough to calculate the
- * structure once, it is related to its nnz pattern.
- *
- * After the matrix is read from disk with the function
- * clsparse<S,D>CsrMatrixfromFile
- * the rowBlock structure can be calculated using clsparseCsrMetaCompute
- *
- * If rowBlocks are calculated the clsparseBoolCsrMatrix.rowBlocks field is not null.
  *
  * Program is executing by completing following steps:
  * 1. Setup OpenCL environment
  * 2. Setup GPU buffers
  * 3. Init clSPARSE library
- * 4. Execute algorithm cldenseSaxpy
+ * 4. Execute algorithm clsparseBoolScsrSpGemm
  * 5. Shutdown clSPARSE library & OpenCL
  *
  * usage:
  *
- * sample-spmv path/to/matrix/in/mtx/format.mtx
+ * bool-mult-sample-c path/to/matrix/in/mtx/format.mtx
  *
  */
 
@@ -285,7 +262,7 @@ int main(int argc, char* argv[])
         printf( "Problem with closing clSPARSE library.\n Error: \n", status);
     }
 
-    printf("A \n");
+    // printf("A \n");
 
     clsparseIdx_t* row_ptr_A = malloc((A.num_rows + 1) * sizeof(clsparseIdx_t));
     clsparseIdx_t* cols_A = malloc(A.num_nonzeros * sizeof(clsparseIdx_t));
@@ -293,10 +270,10 @@ int main(int argc, char* argv[])
 
     returnCsrToHost(A, row_ptr_A, cols_A, vals_A, queue);
 
-    printMatrixNonZeros(A.num_rows, row_ptr_A, cols_A);
+    // printMatrixNonZeros(A.num_rows, row_ptr_A, cols_A);
     // printMatrixDense(A, row_ptr_A, cols_A);
 
-    printf("C \n");
+    // printf("C \n");
 
     clsparseIdx_t* row_ptr_C = malloc((C.num_rows + 1) * sizeof(clsparseIdx_t));
     clsparseIdx_t* cols_C = malloc(C.num_nonzeros * sizeof(clsparseIdx_t));
@@ -304,7 +281,7 @@ int main(int argc, char* argv[])
 
     returnCsrToHost(C, row_ptr_C, cols_C, vals_C, queue);
 
-    printMatrixNonZeros(C.num_rows, row_ptr_C, cols_C);
+    // printMatrixNonZeros(C.num_rows, row_ptr_C, cols_C);
     // printMatrixDense(C, row_ptr_C, cols_C);
 
     //release mem;

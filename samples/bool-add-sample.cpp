@@ -15,8 +15,7 @@
  * ************************************************************************ */
 
  /*! \file
- * \brief Simple demonstration code for how to calculate a SpM-dV (Sparse matrix
- * times dense Vector) multiply
+ * \brief Simple demonstration code for how to calculate a SpMM addition
  */
 
 #include <iostream>
@@ -32,43 +31,21 @@
 #include "clSPARSE-error.h"
 
 /**
- * \brief Sample Sparse Matrix dense Vector multiplication (SPMV C++)
- *  \details [y = alpha * A*x + beta * y]
+ * \brief Sample Bool Sparse Matrix Matrix addition
+ *  \details [C = A + A]
  *
  * A - [m x n] matrix in CSR format
- * x - dense vector of n elements
- * y - dense vector of m elements
- * alpha, beta - scalars
- *
- *
- * Program presents usage of clSPARSE library in csrmv (y = A*x) operation
- * where A is sparse matrix in CSR format, x, y are dense vectors.
- *
- * clSPARSE offers two spmv algorithms for matrix stored in CSR format.
- * First one is called vector algorithm, the second one is called adaptve.
- * Adaptive version is usually faster but for given matrix additional
- * structure (rowBlocks) needs to be calculated first.
- *
- * To calculate rowBlock structure you have to execute clsparseCsrMetaSize
- * for given matrix stored in CSR format. It is enough to calculate the
- * structure once, it is related to its nnz pattern.
- *
- * After the matrix is read from disk with the function
- * clsparse<S,D>CsrMatrixfromFile
- * the rowBlock structure can be calculated using clsparseCsrMetaCompute
- *
- * If rowBlocks are calculated the clsparseCsrMatrix.rowBlocks field is not null.
  *
  * Program is executing by completing following steps:
  * 1. Setup OpenCL environment
  * 2. Setup GPU buffers
  * 3. Init clSPARSE library
- * 4. Execute algorithm cldenseSaxpy
+ * 4. Execute algorithm clsparseBoolScsrElemAdd
  * 5. Shutdown clSPARSE library & OpenCL
  *
  * usage:
  *
- * sample-spmv path/to/matrix/in/mtx/format.mtx
+ * bool-add-sample path/to/matrix/in/mtx/format.mtx
  *
  */
 
@@ -221,8 +198,7 @@ int main (int argc, char* argv[])
 
 
     clsparseBoolCsrMatrix C;
-    /**Step 4. Call the add algorithm */
-    // status = clsparseBoolScsrSpGemm(&A, &B, &C, createResult.control );
+    /**Step 4. Call the addition algorithm */
     status = clsparseBoolScsrElemAdd(&A, &B, &C, createResult.control );
 
     std::vector<int> csrRowPtrC_h((C.num_rows + 1), 0);
@@ -235,11 +211,6 @@ int main (int argc, char* argv[])
                                      0,
                                      0,
                                      0);
-    // for (auto i = csrRowPtrC_h.begin(); i != csrRowPtrC_h.end(); ++i)
-    // {
-    //     std::cout << *i << ' '; 
-    // }
-    // std::cout << std::endl;
 
     std::vector<int> csrColIndC_h(C.num_nonzeros, 0);
     run_status = clEnqueueReadBuffer(queue(),
@@ -251,12 +222,6 @@ int main (int argc, char* argv[])
                                      0,
                                      0,
                                      0);
-    // for (auto i = csrColIndC_h.begin(); i != csrColIndC_h.end(); ++i)
-    // {
-    //     std::cout << *i << ' '; 
-    // }
-    // std::cout << std::endl;
-
 
     // CPU ADDITION
 
@@ -297,23 +262,10 @@ int main (int argc, char* argv[])
         dst.clear();
     }
 
-    // for (auto i = row_ptr_C.begin(); i != row_ptr_C.end(); ++i)
-    // {
-    //     std::cout << *i << ' '; 
-    // }
-    // std::cout << std::endl;
-
-    // for (auto i = cols_C.begin(); i != cols_C.end(); ++i)
-    // {
-    //     std::cout << *i << ' '; 
-    // }
-    // std::cout << std::endl;
-
     // VERIFY RESULTS
 
     assert(csrRowPtrC_h == row_ptr_C);
     assert(csrColIndC_h == cols_C);
-
 
     if (status != clsparseSuccess)
     {

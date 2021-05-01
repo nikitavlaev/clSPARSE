@@ -65,14 +65,15 @@ sample-initialization
 sample-axpy
 sample-spmv
 sample-cg
-my-sample
+bool-add-sample
+bool-mult-sample
 spgemm-sample
 )
 
 set (SAMPLES_C
 sample-initialization-c
 sample-norm1-c
-my-sample-c
+bool-mult-sample-c
 )
 
 set(EXAMPLE_TARGETS)

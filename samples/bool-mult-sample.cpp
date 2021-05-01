@@ -15,11 +15,12 @@
  * ************************************************************************ */
 
  /*! \file
- * \brief Simple demonstration code for how to calculate a SpMM multiplication
+ * \brief Simple demonstration code for how to calculate a BoolSpMM multiplication
  */
 
 #include <iostream>
 #include <vector>
+#include <assert.h>
 
 #define CL_HPP_ENABLE_EXCEPTIONS
 #define CL_HPP_MINIMUM_OPENCL_VERSION BUILD_CLVERSION
@@ -39,19 +40,19 @@
  * 1. Setup OpenCL environment
  * 2. Setup GPU buffers
  * 3. Init clSPARSE library
- * 4. Execute algorithm clsparseScsrSpGemm
+ * 4. Execute algorithm clsparseBoolScsrSpGemm
  * 5. Shutdown clSPARSE library & OpenCL
  *
  * usage:
  *
- * spgemm-sample path/to/matrix/in/mtx/format.mtx
+ * bool-mult-sample path/to/matrix/in/mtx/format.mtx
  *
  */
 
-int readAndCreateCsrMatrix(clsparseCsrMatrix* A, std::string matrix_path, clsparseCreateResult createResult, cl::Context context)
+int readAndCreateBoolCsrMatrix(clsparseBoolCsrMatrix* A, std::string matrix_path, clsparseCreateResult createResult, cl::Context context)
 {
     cl_int cl_status;
-    clsparseInitCsrMatrix(A);
+    clsparseInitBoolCsrMatrix(A);
     // Read matrix from file. Calculates the rowBlocks structures as well.
     clsparseIdx_t nnz, row, col;
     // read MM header to get the size of the matrix;
@@ -69,8 +70,6 @@ int readAndCreateCsrMatrix(clsparseCsrMatrix* A, std::string matrix_path, clspar
     A->num_cols = col;
 
     // Allocate memory for CSR matrix
-    A->values = ::clCreateBuffer( context(), CL_MEM_READ_ONLY,
-                                 A->num_nonzeros * sizeof( float ), NULL, &cl_status );
 
     A->col_indices = ::clCreateBuffer( context(), CL_MEM_READ_ONLY,
                                      A->num_nonzeros * sizeof( clsparseIdx_t ), NULL, &cl_status );
@@ -80,12 +79,12 @@ int readAndCreateCsrMatrix(clsparseCsrMatrix* A, std::string matrix_path, clspar
 
 
     // Read matrix market file with explicit zero values included.
-    fileError = clsparseSCsrMatrixfromFile( A, matrix_path.c_str( ), createResult.control, true );
+    fileError = clsparseSBoolCsrMatrixfromFile( A, matrix_path.c_str( ), createResult.control, true );
 
     // This function allocates memory for rowBlocks structure. If not called
     // the structure will not be calculated and clSPARSE will run the vectorized
     // version of SpMV instead of adaptive;
-    clsparseCsrMetaCreate( A, createResult.control );
+    clsparseBoolCsrMetaCreate( A, createResult.control );
 
     if (fileError != clsparseSuccess)
     {
@@ -192,14 +191,38 @@ int main (int argc, char* argv[])
     clsparseCreateResult createResult = clsparseCreateControl( queue( ) );
     CLSPARSE_V( createResult.status, "Failed to create clsparse control" );
 
-    clsparseCsrMatrix A;
-    int error = readAndCreateCsrMatrix(&A, matrix_path, createResult, context);
-    clsparseCsrMatrix B;
-    int error1 = readAndCreateCsrMatrix(&B, matrix_path, createResult, context);
+    clsparseBoolCsrMatrix A;
+    int error = readAndCreateBoolCsrMatrix(&A, matrix_path, createResult, context);
+    clsparseBoolCsrMatrix B;
+    int error1 = readAndCreateBoolCsrMatrix(&B, matrix_path, createResult, context);
 
-    clsparseCsrMatrix C;
-    /**Step 4. Call the spmv algorithm */
-    status = clsparseScsrSpGemm(&A, &B, &C, createResult.control);
+
+    clsparseBoolCsrMatrix C;
+    /**Step 4. Call the multiplication algorithm */
+    status = clsparseBoolScsrSpGemm(&A, &B, &C, createResult.control );
+
+    std::vector<int> csrRowPtrC_h((C.num_rows + 1), 0);
+    int run_status = clEnqueueReadBuffer(queue(),
+                                     C.row_pointer,
+                                     1,
+                                     0,
+                                     (C.num_rows + 1)*sizeof(cl_int),
+                                     csrRowPtrC_h.data(),
+                                     0,
+                                     0,
+                                     0);
+
+    std::vector<int> csrColIndC_h(C.num_nonzeros, 0);
+    run_status = clEnqueueReadBuffer(queue(),
+                                     C.col_indices,
+                                     1,
+                                     0,
+                                     C.num_nonzeros*sizeof(cl_int),
+                                     csrColIndC_h.data(),
+                                     0,
+                                     0,
+                                     0);
+
     if (status != clsparseSuccess)
     {
         std::cout << "Problem with execution SpMV algorithm."
@@ -225,18 +248,15 @@ int main (int argc, char* argv[])
 
 
     //release mem;
-    clsparseCsrMetaDelete( &A );
-    clReleaseMemObject ( A.values );
+    clsparseBoolCsrMetaDelete( &A );
     clReleaseMemObject ( A.col_indices );
     clReleaseMemObject ( A.row_pointer );
 
-    clsparseCsrMetaDelete( &B );
-    clReleaseMemObject ( B.values );
+    clsparseBoolCsrMetaDelete( &B );
     clReleaseMemObject ( B.col_indices );
     clReleaseMemObject ( B.row_pointer );
 
-    std::cout << C.num_rows << ' ' << C.num_cols << ' ' << C.num_nonzeros << std::endl;
-    clReleaseMemObject ( C.values );
+    std::cout << C.num_nonzeros << std::endl;
     clReleaseMemObject ( C.col_indices );
     clReleaseMemObject ( C.row_pointer );
     std::cout << "Program completed successfully." << std::endl;
