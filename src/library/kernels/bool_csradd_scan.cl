@@ -89,46 +89,4 @@ __kernel void update_pref_sum(__global unsigned int * pref_sum,
     pref_sum[global_id] += vertices[global_leaf_id]; 
 }
 
-// void hello()
-// {
-//     printf("Hello\n");
-// }
-
-__kernel void test_kernel(
-    __global int * array1,
-    int len)
-{
-    printf("gg %d ", get_global_id(0));
-    printf("gr %d ", get_group_id(0));
-    printf("gl %d ", get_local_id(0));
-    printf("gls %d\n", get_local_size(0));
-
-    __local int arr[8];
-
-    for (int i = 0; i < 8; i++)
-    {
-        arr[i] = i + 1;
-    }
-    
-
-    if (get_global_id(0) == 0)
-    {
-        for (int i = 0; i < len; ++i)
-        {
-            printf("%d ", arr[i]);
-        }
-        printf("\n");
-        
-        arr[0] = 777;
-        printf("check local %d\n", arr[0]);
-    }
-
-    barrier(CLK_LOCAL_MEM_FENCE);
-
-    if (get_global_id(0) == 2)
-    {
-        printf("check %d\n", arr[0]);
-    }
-
-}
 )"
