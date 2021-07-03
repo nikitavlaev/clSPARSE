@@ -86,6 +86,7 @@ set( src
   resources/csr_matrix_environment.cpp
   resources/opencl_utils.cpp
   resources/sparse_matrix_environment.cpp
+  resources/sparse_bool_matrix_environment.cpp
 )
 
 set( headers
@@ -93,6 +94,7 @@ set( headers
   resources/clsparse_environment.h
   resources/matrix_utils.h
   resources/sparse_matrix_environment.h
+  resources/sparse_bool_matrix_environment.h
   resources/csr_matrix_environment.h
   resources/blas1_environment.h
   resources/sparse_matrix_fill.hpp
