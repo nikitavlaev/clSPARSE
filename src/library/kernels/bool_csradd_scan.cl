@@ -83,9 +83,7 @@ __kernel void update_pref_sum(__global unsigned int * pref_sum,
 
 
     if (local_leaf_id == 0 || global_id >= n) return;
-//    if (leaf_size == 256 && global_leaf_id == 1 && get_local_id(0) == 0) {
-//        printf("vertices[global_leaf_id - 1]: %d\n", vertices[global_leaf_id - 1]);
-//    }
+    
     pref_sum[global_id] += vertices[global_leaf_id]; 
 }
 

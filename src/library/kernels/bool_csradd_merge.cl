@@ -3,7 +3,6 @@ R"(
 #define warp_size 64
 #define blocksize WG_SIZE
 #define uint unsigned int
-// #include "assert.cl"  // include assert* macros
 
 __kernel
 void merge_count(
@@ -13,10 +12,6 @@ void merge_count(
         __global const int *col_b,
         __global int *rpt_c)
 {
-    // WHAT IS THE DIFFERENCE BETWEEN blockDim.x and blocksize?
-
-    // const int blocksize = WG_SIZE;
-
     //workgroup for row
     const int row = get_group_id(0);
 
@@ -146,10 +141,6 @@ void merge_count(
         // local -> global
         barrier(CLK_LOCAL_MEM_FENCE);
     }
-
-    // int global_id = get_global_id(0);
-    // int group_id = get_group_id(0);
-    // printf("Hello %d %d\n", group_id, global_id);
 }
 
 __kernel
@@ -280,17 +271,7 @@ void merge_fill(
 
         barrier(CLK_LOCAL_MEM_FENCE);
 
-        // TODO: optimize prefix sum
-        // however it is only WG_SIZE elems...
-        // if (j == 0) {
-        //     for (int i = 1; i < WG_SIZE; i++) {
-        //         int accum = res[i-1];
-        //         res[i] += accum;
-        //     }
-        // }
-
         // EXACT COPY OF SCAN_BELLOCH
-        // TODO: move scan_belloch to reuse here
 
         uint local_id = get_local_id(0);
         uint block_size = get_local_size(0);
