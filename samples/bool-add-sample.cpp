@@ -19,6 +19,7 @@
  */
 
 #include <iostream>
+#include <fstream>
 #include <vector>
 #include <assert.h>
 
@@ -266,6 +267,10 @@ int main (int argc, char* argv[])
 
     assert(csrRowPtrC_h == row_ptr_C);
     assert(csrColIndC_h == cols_C);
+
+    clsparsePrintBoolCsrMatrix(C, queue(), 1);
+    clsparseBoolCsrMatrixDumpToMtx(C, queue(), "tmp1.txt");
+    std::cout << "end of print" << std::endl;
 
     if (status != clsparseSuccess)
     {
