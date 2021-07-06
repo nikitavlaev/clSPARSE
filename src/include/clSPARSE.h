@@ -653,6 +653,30 @@ extern "C" {
      */
     CLSPARSE_EXPORT clsparseStatus
         clsparseDCsrMatrixfromFile( clsparseCsrMatrix* csrMatx, const char* filePath, clsparseControl control, cl_bool read_explicit_zeroes );
+    
+    /*!
+     * \brief Print bool sparse matrix data in CSR format to stdout
+     * \param[in] A  The CSR sparse structure that represents the matrix in device memory
+     * \param[in] queue Command queue object  
+     * \param[in] dense Print output in dense (1) or in coord (0) format  
+     * \returns \b clsparseSuccess
+     *
+     * \ingroup FILE
+     */
+    CLSPARSE_EXPORT clsparseStatus
+        clsparsePrintBoolCsrMatrix(clsparseBoolCsrMatrix A, cl_command_queue queue, int dense);
+
+     /*!
+     * \brief Print bool sparse matrix data in CSR format to stdout
+     * \param[in] A  The CSR sparse structure that represents the matrix in device memory
+     * \param[in] queue Command queue object 
+     * \param[in] filename File to dump in
+     * \returns \b clsparseSuccess
+     *
+     * \ingroup FILE
+     */
+    CLSPARSE_EXPORT clsparseStatus
+        clsparseBoolCsrMatrixDumpToMtx(clsparseBoolCsrMatrix A, cl_command_queue queue, char* filename);
 
     /*! \brief A structure returned by value from the clsparseCsrMetaSize
     * function.  This serves as a result/status pair for the size of the

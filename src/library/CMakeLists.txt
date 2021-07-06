@@ -92,6 +92,7 @@ set( clSPARSE.source.cl
 set( clSPARSE.source.cpp
   clsparse-init.cpp
   io/mm-reader.cpp
+  io/csr-mm-printer.cpp
 )
 
 set( clSPARSE.source.internal
